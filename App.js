@@ -8,18 +8,21 @@ import {
   Keyboard,
   ScrollView,
   Modal,
+  Pressable,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Task from './components/general/Task';
 import CustomButton from './components/general/Button';
 import CustomTextInput from './components/general/CustomTextInput';
+import CustomModal from './components/general/CustomModal';
 
 const App = () => {
   const [task, setTask] = useState(); // bisa di sebut sebagai controller text input
   const [taskItems, setTaskItems] = useState([]); // state untuk list task
   const [userId, setUserId] = useState();
-  const [modalVisible, setModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const baseUrl =
     'https://react-http-post-4ad54-default-rtdb.firebaseio.com/task/' + userId;
@@ -160,10 +163,19 @@ const App = () => {
 
   return (
     <View style={styles.container}>
+      {/* Modal User ID*/}
+      <CustomModal
+        visible={modalVisible}
+        onPress={() => setModalVisible(false)}
+        userId={userId}
+      />
       {/* Today's Tasks */}
       <View style={styles.tasksWrapper}>
         <View style={styles.header}>
           <Text style={styles.sectionTitle}>Today's tasks</Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Text style={styles.sectionTitle}>ID</Text>
+          </TouchableOpacity>
         </View>
         <ScrollView showsVerticalScrollIndicator={false} style={styles.items}>
           {/* This is where the task will go! */}
@@ -212,7 +224,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center,',
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: 24,
