@@ -6,6 +6,8 @@ import {
   KeyboardAvoidingView,
   TouchableOpacity,
   Keyboard,
+  ScrollView,
+  Modal,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Task from './components/general/Task';
@@ -16,6 +18,7 @@ const App = () => {
   const [task, setTask] = useState(); // bisa di sebut sebagai controller text input
   const [taskItems, setTaskItems] = useState([]); // state untuk list task
   const [userId, setUserId] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const baseUrl =
@@ -46,16 +49,12 @@ const App = () => {
     }
   };
 
-  const test = async () => {
-    console.log(userId);
-  };
-
   const _clearData = async () => {
     AsyncStorage.clear();
   };
 
   // add new task and post to firebase
-  const postDatabase = async () => {
+  const handleAddTask = async () => {
     Keyboard.dismiss();
     try {
       const item = {
@@ -68,7 +67,7 @@ const App = () => {
         headers: {'content-type': 'application/json'},
       });
       if (!response.ok) {
-        throw new Error('postDatabase Something went wrong!');
+        throw new Error('handleAddTask Something went wrong!');
       }
       const data = await response.json();
       setTaskItems(prevTask => {
@@ -90,7 +89,7 @@ const App = () => {
   };
 
   // remove object by filtering which is isComplete value == true
-  const removeDatabase = async () => {
+  const handleDeleteTask = async () => {
     const taskComplete = taskItems.filter(task => task.isComplete == true);
 
     for (var _item of taskComplete) {
@@ -110,7 +109,7 @@ const App = () => {
     setTaskItems(taskCopy);
   };
 
-  const fetchDatabase = async () => {
+  const handleFetchTask = async () => {
     console.log('infinite looping');
     setIsLoading(true);
     try {
@@ -149,7 +148,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    fetchDatabase();
+    handleFetchTask();
   }, [userId]);
 
   // remove object by index
@@ -163,8 +162,10 @@ const App = () => {
     <View style={styles.container}>
       {/* Today's Tasks */}
       <View style={styles.tasksWrapper}>
-        <Text style={styles.sectionTitle}>Today's tasks</Text>
-        <View style={styles.items}>
+        <View style={styles.header}>
+          <Text style={styles.sectionTitle}>Today's tasks</Text>
+        </View>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.items}>
           {/* This is where the task will go! */}
           {taskItems.map((item, index) => {
             return (
@@ -177,7 +178,8 @@ const App = () => {
               </TouchableOpacity>
             );
           })}
-        </View>
+          <View style={{marginTop: 200}} />
+        </ScrollView>
       </View>
 
       {/* Write a task */}
@@ -185,9 +187,9 @@ const App = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.writeTaskWrapper}>
         <View style={styles.buttonWrapper}>
-          <CustomButton onPress={() => fetchDatabase()} text={'Refresh'} />
-          <CustomButton onPress={() => removeDatabase()} text={'Delete'} />
-          <CustomButton onPress={() => postDatabase()} text={'Add'} />
+          <CustomButton onPress={() => handleFetchTask()} text={'Refresh'} />
+          <CustomButton onPress={() => handleDeleteTask()} text={'Delete'} />
+          <CustomButton onPress={() => handleAddTask()} text={'Add'} />
         </View>
         <CustomTextInput task={task} onChangeText={text => setTask(text)} />
       </KeyboardAvoidingView>
@@ -205,6 +207,12 @@ const styles = StyleSheet.create({
   tasksWrapper: {
     paddingTop: 80,
     paddingHorizontal: 20,
+  },
+
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center,',
   },
   sectionTitle: {
     fontSize: 24,
